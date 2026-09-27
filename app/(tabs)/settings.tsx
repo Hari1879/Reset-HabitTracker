@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Switch, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Switch, Alert, TextInput, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useTheme } from '@/theme';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -186,6 +187,32 @@ export default function Settings() {
               )}
             </View>
           ) : null}
+        </Card>
+
+        <SectionLabel theme={theme}>SUPPORT THE APP</SectionLabel>
+        <Card>
+          <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>
+            Reset is free forever. View a few ads on our dedicated support page to help keep it that way.
+          </Text>
+          <Pressable
+            onPress={() => router.push('/support')}
+            style={({ pressed }) => ({
+              marginTop: 14,
+              flexDirection: 'row',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              backgroundColor: theme.cardAlt,
+              borderRadius: 14,
+              padding: 14,
+              opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <IconGlyph name="heart" size={18} color={theme.coral.base} />
+              <Text style={{ color: theme.textPrimary, fontSize: 15, fontWeight: '700', marginLeft: 10 }}>View support page</Text>
+            </View>
+            <IconGlyph name="chevronRight" size={16} color={theme.textMuted} />
+          </Pressable>
         </Card>
 
         <SectionLabel theme={theme}>APPLE HEALTH</SectionLabel>
