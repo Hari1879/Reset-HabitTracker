@@ -40,6 +40,10 @@ export default function TabsLayout() {
         options={{ title: 'Achievements', tabBarIcon: ({ color }) => <TabIcon name="flame" color={color as string} />, tabBarAccessibilityLabel: 'Achievements' }}
       />
       <Tabs.Screen
+        name="review"
+        options={{ title: 'Review', tabBarIcon: ({ color }) => <TabIcon name="spark" color={color as string} />, tabBarAccessibilityLabel: 'Weekly review' }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{ title: 'Settings', tabBarIcon: ({ color }) => <TabIcon name="lock" color={color as string} />, tabBarAccessibilityLabel: 'Settings' }}
       />

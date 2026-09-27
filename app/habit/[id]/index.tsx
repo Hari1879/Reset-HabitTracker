@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Alert } from 'react-native';
+import { View, Text, ScrollView, Alert, TextInput } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
@@ -7,6 +7,7 @@ import { ScreenHeader } from '@/components/ui/ScreenHeader';
 import { IconButton } from '@/components/ui/IconButton';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
+import { Chip } from '@/components/ui/Chip';
 import { ProgressRing } from '@/components/ProgressRing';
 import { MilestoneTimeline } from '@/components/MilestoneTimeline';
 import { HeatmapCalendar } from '@/components/HeatmapCalendar';
@@ -16,7 +17,7 @@ import { useHabitStore } from '@/store/useHabitStore';
 import { getCurrentStreakDays, getLongestStreakDays, getResetCount, getSuccessRate, getMoneyTimeSaved } from '@/lib/streaks';
 import { getMilestoneProgress } from '@/lib/milestones';
 import { formatFriendlyDate } from '@/lib/dates';
-import type { SlipTrigger } from '@/types';
+import type { Mood, SlipTrigger } from '@/types';
 
 export default function HabitDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -30,6 +31,9 @@ export default function HabitDetail() {
   const deleteHabit = useHabitStore((s) => s.deleteHabit);
 
   const [slipVisible, setSlipVisible] = useState(false);
+  const [mood, setMood] = useState<Mood>('okay');
+  const [craving, setCraving] = useState(1);
+  const [journal, setJournal] = useState('');
 
   const habit = habits.find((h) => h.id === id);
 
@@ -96,10 +100,17 @@ export default function HabitDetail() {
         </View>
 
         <View style={{ paddingHorizontal: 20, marginTop: 8 }}>
+          <Text style={{ color: theme.textMuted, fontSize: 12, fontWeight: '700', marginBottom: 8 }}>TODAY'S REFLECTION</Text>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+            {(['great', 'okay', 'low', 'rough'] as Mood[]).map((value) => <Chip key={value} label={value} selected={mood === value} onPress={() => setMood(value)} accent={habit.accent} />)}
+          </View>
+          <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 4 }}>Craving level: {craving}/5</Text>
+          <View style={{ flexDirection: 'row', gap: 7, marginTop: 8, marginBottom: 10 }}>{[1, 2, 3, 4, 5].map((value) => <Chip key={value} label={`${value}`} selected={craving === value} onPress={() => setCraving(value)} accent="coral" />)}</View>
+          <TextInput value={journal} onChangeText={setJournal} placeholder="What helped today?" placeholderTextColor={theme.textMuted} multiline accessibilityLabel="Daily journal entry" style={{ minHeight: 58, backgroundColor: theme.cardAlt, borderRadius: 16, padding: 12, color: theme.textPrimary, textAlignVertical: 'top', marginBottom: 10 }} />
           <Button
             label="Check in for today"
             accent={habit.accent}
-            onPress={() => checkInToday(habit.id)}
+            onPress={() => checkInToday(habit.id, undefined, { mood, craving, journal: journal.trim() || undefined })}
             fullWidth
             accessibilityHint="Marks today as a good day for this habit"
           />

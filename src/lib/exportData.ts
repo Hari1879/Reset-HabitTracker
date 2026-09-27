@@ -1,13 +1,14 @@
 import { File, Paths } from 'expo-file-system';
 import * as Sharing from 'expo-sharing';
 import { Platform } from 'react-native';
-import type { Achievement, CheckIn, Habit, Reminder, Slip, WidgetConfig } from '@/types';
+import type { Achievement, CheckIn, CravingLog, Habit, Reminder, Slip, WidgetConfig } from '@/types';
 
 export interface ExportPayload {
   exportedAt: string;
   habits: Habit[];
   checkIns: CheckIn[];
   slips: Slip[];
+  cravings: CravingLog[];
   achievements: Achievement[];
   reminders: Reminder[];
   widgetConfigs: WidgetConfig[];

@@ -10,6 +10,8 @@ import { IconGlyph } from '@/components/IconGlyph';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useHabitStore } from '@/store/useHabitStore';
 import { exportDataAsJSON } from '@/lib/exportData';
+import * as DocumentPicker from 'expo-document-picker';
+import { File } from 'expo-file-system';
 import type { ThemePreference } from '@/types';
 
 const THEME_OPTIONS: { id: ThemePreference; label: string }[] = [
@@ -47,6 +49,7 @@ export default function Settings() {
         habits: habitState.habits,
         checkIns: habitState.checkIns,
         slips: habitState.slips,
+        cravings: habitState.cravings,
         achievements: habitState.achievements,
         reminders,
         widgetConfigs: habitState.widgetConfigs,
@@ -55,6 +58,18 @@ export default function Settings() {
       Alert.alert('Export failed', 'Something went wrong while preparing your data.');
     } finally {
       setExporting(false);
+    }
+  };
+
+  const handleImport = async () => {
+    const result = await DocumentPicker.getDocumentAsync({ type: 'application/json', copyToCacheDirectory: true });
+    if (result.canceled) return;
+    try {
+      const payload = JSON.parse(await new File(result.assets[0].uri).text());
+      habitState.restoreData(payload);
+      Alert.alert('Backup restored', 'Your local habit history has been restored.');
+    } catch {
+      Alert.alert('Restore failed', 'Choose a valid Reset JSON backup.');
     }
   };
 
@@ -112,6 +127,7 @@ export default function Settings() {
             Export everything Reset has stored about you as a JSON file you can keep or move elsewhere.
           </Text>
           <Button label="Export data to JSON" onPress={handleExport} loading={exporting} variant="secondary" style={{ marginTop: 14 }} />
+          <Button label="Restore from JSON" onPress={handleImport} variant="ghost" style={{ marginTop: 8 }} />
         </Card>
 
         <SectionLabel theme={theme}>PRIVACY</SectionLabel>

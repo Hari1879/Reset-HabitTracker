@@ -28,6 +28,10 @@ export type WidgetPlatform = 'ios' | 'android';
 
 export type SlipTrigger = 'stress' | 'boredom' | 'social' | 'late_night' | 'other';
 
+export type Mood = 'great' | 'okay' | 'low' | 'rough';
+export type GoalMode = 'abstain' | 'reduce';
+export type CopingAction = 'breathe' | 'walk' | 'water' | 'delay' | 'message' | 'journal';
+
 /** A habit the user is tracking. Streaks are derived at read-time from startDate + slips, never stored. */
 export interface Habit {
   id: string;
@@ -40,6 +44,9 @@ export interface Habit {
   createdAt: string;
   archived: boolean;
   motivationNote?: string;
+  goalMode?: GoalMode;
+  dailyTarget?: number;
+  baselinePerDay?: number;
   /** Optional cost/time-saved tracking, e.g. "$8/day" avoided. */
   costPerDay?: number;
   costUnit?: string;
@@ -52,6 +59,20 @@ export interface CheckIn {
   /** Local calendar date, yyyy-MM-dd, one per day per habit. */
   date: string;
   note?: string;
+  mood?: Mood;
+  craving?: number;
+  journal?: string;
+  copingAction?: CopingAction;
+  createdAt: string;
+}
+
+export interface CravingLog {
+  id: string;
+  habitId: string;
+  intensity: number;
+  trigger?: SlipTrigger;
+  action?: CopingAction;
+  resolved: boolean;
   createdAt: string;
 }
 

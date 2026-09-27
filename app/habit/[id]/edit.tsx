@@ -7,7 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { IconButton } from '@/components/ui/IconButton';
 import { IconGlyph } from '@/components/IconGlyph';
 import { useHabitStore } from '@/store/useHabitStore';
-import type { AccentColor } from '@/types';
+import { Chip } from '@/components/ui/Chip';
+import type { AccentColor, GoalMode } from '@/types';
 
 const ACCENTS: AccentColor[] = ['teal', 'aqua', 'lavender', 'coral', 'gold'];
 
@@ -22,6 +23,9 @@ export default function EditHabit() {
   const [motivationNote, setMotivationNote] = useState(habit?.motivationNote ?? '');
   const [accent, setAccent] = useState<AccentColor>(habit?.accent ?? 'teal');
   const [costPerDay, setCostPerDay] = useState(habit?.costPerDay?.toString() ?? '');
+  const [goalMode, setGoalMode] = useState<GoalMode>(habit?.goalMode ?? 'abstain');
+  const [dailyTarget, setDailyTarget] = useState(habit?.dailyTarget?.toString() ?? '');
+  const [baselinePerDay, setBaselinePerDay] = useState(habit?.baselinePerDay?.toString() ?? '');
 
   if (!habit) {
     return (
@@ -33,12 +37,17 @@ export default function EditHabit() {
 
   const handleSave = () => {
     const cost = parseFloat(costPerDay);
+    const target = parseFloat(dailyTarget);
+    const baseline = parseFloat(baselinePerDay);
     updateHabit(habit.id, {
       title: title.trim() || habit.title,
       motivationNote: motivationNote.trim() || undefined,
       accent,
       costPerDay: Number.isNaN(cost) ? undefined : cost,
       costUnit: Number.isNaN(cost) ? undefined : (habit.costUnit ?? '$'),
+      goalMode,
+      dailyTarget: goalMode === 'reduce' && !Number.isNaN(target) ? target : undefined,
+      baselinePerDay: goalMode === 'reduce' && !Number.isNaN(baseline) ? baseline : undefined,
     });
     router.back();
   };
@@ -104,6 +113,18 @@ export default function EditHabit() {
           accessibilityLabel="Estimated cost saved per day"
           style={{ backgroundColor: theme.cardAlt, borderRadius: 16, padding: 14, color: theme.textPrimary, fontSize: 15 }}
         />
+
+        <Text style={{ color: theme.textMuted, fontSize: 13, fontWeight: '600', marginTop: 20, marginBottom: 8 }}>GOAL TYPE</Text>
+        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
+          <Chip label="Quit completely" selected={goalMode === 'abstain'} onPress={() => setGoalMode('abstain')} accent="teal" />
+          <Chip label="Reduce gradually" selected={goalMode === 'reduce'} onPress={() => setGoalMode('reduce')} accent="teal" />
+        </View>
+        {goalMode === 'reduce' && (
+          <View style={{ flexDirection: 'row', gap: 10, marginTop: 4 }}>
+            <TextInput value={baselinePerDay} onChangeText={setBaselinePerDay} placeholder="Current / day" placeholderTextColor={theme.textMuted} keyboardType="decimal-pad" accessibilityLabel="Current daily amount" style={{ flex: 1, backgroundColor: theme.cardAlt, borderRadius: 16, padding: 14, color: theme.textPrimary }} />
+            <TextInput value={dailyTarget} onChangeText={setDailyTarget} placeholder="Target / day" placeholderTextColor={theme.textMuted} keyboardType="decimal-pad" accessibilityLabel="Target daily amount" style={{ flex: 1, backgroundColor: theme.cardAlt, borderRadius: 16, padding: 14, color: theme.textPrimary }} />
+          </View>
+        )}
 
         <View style={{ marginTop: 28 }}>
           <Button label="Save changes" onPress={handleSave} fullWidth accent={accent} />

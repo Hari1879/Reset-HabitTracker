@@ -57,6 +57,18 @@ export default function Home() {
         </LinearGradient>
 
         <View style={{ marginTop: 28 }}>
+          <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
+            <Pressable onPress={() => router.push('/craving')} style={{ flex: 1, padding: 14, borderRadius: 16, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }} accessibilityRole="button" accessibilityLabel="Open craving support">
+              <IconGlyph name="flame" size={19} color={theme.coral.base} />
+              <Text style={{ color: theme.textPrimary, fontWeight: '700', marginTop: 8 }}>Craving support</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12, marginTop: 3 }}>Pause and reset</Text>
+            </Pressable>
+            <Pressable onPress={() => router.push('/(tabs)/review')} style={{ flex: 1, padding: 14, borderRadius: 16, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }} accessibilityRole="button" accessibilityLabel="Open weekly review">
+              <IconGlyph name="spark" size={19} color={theme.gold.base} />
+              <Text style={{ color: theme.textPrimary, fontWeight: '700', marginTop: 8 }}>Weekly review</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12, marginTop: 3 }}>See your patterns</Text>
+            </Pressable>
+          </View>
           {activeHabits.length === 0 ? (
             <EmptyState theme={theme} />
           ) : (

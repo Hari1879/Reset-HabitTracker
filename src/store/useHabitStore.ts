@@ -4,10 +4,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type {
   Achievement,
   CheckIn,
+  CopingAction,
+  CravingLog,
   Habit,
   HabitCategory,
   Slip,
   SlipTrigger,
+  Mood,
+  GoalMode,
   WidgetConfig,
   WidgetStyle,
   AccentColor,
@@ -26,6 +30,7 @@ interface HabitState {
   habits: Habit[];
   checkIns: CheckIn[];
   slips: Slip[];
+  cravings: CravingLog[];
   achievements: Achievement[];
   widgetConfigs: WidgetConfig[];
   hasHydrated: boolean;
@@ -36,12 +41,15 @@ interface HabitState {
   clearLastUnlocked: () => void;
 
   addHabit: (input: { category: HabitCategory; title: string; startDate?: string }) => Habit;
-  updateHabit: (id: string, patch: Partial<Pick<Habit, 'title' | 'motivationNote' | 'accent' | 'costPerDay' | 'costUnit' | 'minutesPerDay'>>) => void;
+  updateHabit: (id: string, patch: Partial<Pick<Habit, 'title' | 'motivationNote' | 'accent' | 'costPerDay' | 'costUnit' | 'minutesPerDay' | 'goalMode' | 'dailyTarget' | 'baselinePerDay'>>) => void;
   archiveHabit: (id: string) => void;
   deleteHabit: (id: string) => void;
 
-  checkInToday: (habitId: string, note?: string) => void;
+  checkInToday: (habitId: string, note?: string, reflection?: { mood?: Mood; craving?: number; journal?: string; copingAction?: CopingAction }) => void;
+  logCraving: (habitId: string, intensity: number, trigger?: SlipTrigger, action?: CopingAction, resolved?: boolean) => void;
+  setGoal: (habitId: string, goalMode: GoalMode, dailyTarget?: number, baselinePerDay?: number) => void;
   recordSlip: (habitId: string, trigger?: SlipTrigger, note?: string) => void;
+  restoreData: (data: Partial<Pick<HabitState, 'habits' | 'checkIns' | 'slips' | 'cravings' | 'achievements' | 'widgetConfigs'>>) => void;
 
   addWidgetConfig: (habitId: string, style: WidgetStyle, accent: AccentColor, platform: 'ios' | 'android', size?: 'small' | 'medium' | 'large') => WidgetConfig;
   updateWidgetConfig: (id: string, patch: Partial<Pick<WidgetConfig, 'style' | 'accent' | 'size'>>) => void;
@@ -71,6 +79,7 @@ export const useHabitStore = create<HabitState>()(
       habits: [],
       checkIns: [],
       slips: [],
+      cravings: [],
       achievements: [],
       widgetConfigs: [],
       hasHydrated: false,
@@ -125,12 +134,14 @@ export const useHabitStore = create<HabitState>()(
         }));
       },
 
-      checkInToday: (habitId, note) => {
+      checkInToday: (habitId, note, reflection) => {
         const key = todayKey();
         const already = get().checkIns.some((c) => c.habitId === habitId && c.date === key);
         if (!already) {
-          const checkIn: CheckIn = { id: generateId('checkin'), habitId, date: key, note, createdAt: new Date().toISOString() };
+          const checkIn: CheckIn = { id: generateId('checkin'), habitId, date: key, note, ...reflection, createdAt: new Date().toISOString() };
           set((s) => ({ checkIns: [...s.checkIns, checkIn] }));
+        } else if (reflection || note) {
+          set((s) => ({ checkIns: s.checkIns.map((checkIn) => checkIn.habitId === habitId && checkIn.date === key ? { ...checkIn, note: note ?? checkIn.note, ...reflection } : checkIn) }));
         }
 
         const habit = get().habits.find((h) => h.id === habitId);
@@ -148,6 +159,15 @@ export const useHabitStore = create<HabitState>()(
         void syncAllWidgetsForHabit(get().widgetConfigs, habitId, buildSnapshot(habit));
       },
 
+      logCraving: (habitId, intensity, trigger, action, resolved = false) => {
+        const craving: CravingLog = { id: generateId('craving'), habitId, intensity, trigger, action, resolved, createdAt: new Date().toISOString() };
+        set((s) => ({ cravings: [...s.cravings, craving] }));
+      },
+
+      setGoal: (habitId, goalMode, dailyTarget, baselinePerDay) => {
+        set((s) => ({ habits: s.habits.map((habit) => habit.id === habitId ? { ...habit, goalMode, dailyTarget, baselinePerDay } : habit) }));
+      },
+
       recordSlip: (habitId, trigger, note) => {
         const habit = get().habits.find((h) => h.id === habitId);
         if (!habit) return;
@@ -161,6 +181,15 @@ export const useHabitStore = create<HabitState>()(
 
         void syncAllWidgetsForHabit(get().widgetConfigs, habitId, buildSnapshot(updatedHabit));
       },
+
+      restoreData: (data) => set((s) => ({
+        habits: data.habits ?? s.habits,
+        checkIns: data.checkIns ?? s.checkIns,
+        slips: data.slips ?? s.slips,
+        cravings: data.cravings ?? s.cravings,
+        achievements: data.achievements ?? s.achievements,
+        widgetConfigs: data.widgetConfigs ?? s.widgetConfigs,
+      })),
 
       addWidgetConfig: (habitId, style, accent, platform, size = 'medium') => {
         const config: WidgetConfig = { id: generateId('widget'), habitId, style, size, accent, platform };
