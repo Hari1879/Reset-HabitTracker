@@ -1,0 +1,8 @@
+{
+  "name": "reset-widget-bridge",
+  "version": "1.0.0",
+  "description": "Native bridge syncing Reset habit progress into WidgetKit App Group storage / Android SharedPreferences for home-screen widgets.",
+  "main": "index.ts",
+  "license": "UNLICENSED",
+  "private": true
+}

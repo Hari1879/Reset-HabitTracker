@@ -1,25 +1,64 @@
 {
   "expo": {
     "name": "Reset",
-    "slug": "Reset",
+    "slug": "reset-habits",
+    "scheme": "reset",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "primaryColor": "#2FBFAE",
+    "backgroundColor": "#0A0E17",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "app.reset.habits",
+      "userInterfaceStyle": "automatic",
+      "entitlements": {
+        "com.apple.security.application-groups": ["group.app.reset.habits"]
+      },
+      "infoPlist": {
+        "UIBackgroundModes": [],
+        "NSUserNotificationsUsageDescription": "Reset uses gentle reminders to help you check in on your habits."
+      }
     },
     "android": {
+      "package": "app.reset.habits",
+      "userInterfaceStyle": "automatic",
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#0A0E17",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "SCHEDULE_EXACT_ALARM"]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-status-bar",
+      "expo-sharing",
+      [
+        "expo-notifications",
+        {
+          "color": "#2FBFAE"
+        }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-8008114373723541~5019488342",
+          "iosAppId": "ca-app-pub-8008114373723541~5019488342",
+          "userTrackingUsageDescription": "This identifier will be used to show personalized ads to you."
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }

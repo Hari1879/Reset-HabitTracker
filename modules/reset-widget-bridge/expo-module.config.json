@@ -1,0 +1,9 @@
+{
+  "platforms": ["ios", "android"],
+  "ios": {
+    "modules": ["ResetWidgetBridgeModule"]
+  },
+  "android": {
+    "modules": ["expo.modules.resetwidgetbridge.ResetWidgetBridgeModule"]
+  }
+}

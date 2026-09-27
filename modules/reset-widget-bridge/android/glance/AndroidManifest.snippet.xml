@@ -1,0 +1,25 @@
+<!--
+  Merge these blocks into android/app/src/main/AndroidManifest.xml, inside <application>.
+  One <receiver> per widget size the user can pick from the OS widget picker;
+  all three point at the same ResetGlanceWidgetReceiver — Glance's Responsive
+  sizeMode (see ResetGlanceWidget.kt) renders the right layout for whichever
+  size the user drags onto their home screen.
+-->
+<receiver
+  android:name="app.reset.habits.widget.ResetGlanceWidgetReceiver"
+  android:exported="false">
+  <intent-filter>
+    <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+  </intent-filter>
+  <meta-data
+    android:name="android.appwidget.provider"
+    android:resource="@xml/reset_widget_info" />
+</receiver>
+
+<receiver
+  android:name="app.reset.habits.widget.WidgetRefreshReceiver"
+  android:exported="false">
+  <intent-filter>
+    <action android:name="app.reset.habits.WIDGET_REFRESH" />
+  </intent-filter>
+</receiver>

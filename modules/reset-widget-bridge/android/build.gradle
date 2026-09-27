@@ -1,0 +1,17 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'expo-module-gradle-plugin'
+
+group = 'app.reset.habits'
+version = '1.0.0'
+
+android {
+  namespace "expo.modules.resetwidgetbridge"
+  defaultConfig {
+    minSdkVersion 24
+  }
+}
+
+dependencies {
+  implementation "androidx.glance:glance-appwidget:1.1.1"
+}
