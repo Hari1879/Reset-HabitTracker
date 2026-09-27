@@ -13,6 +13,7 @@ import { useHabitStore } from '@/store/useHabitStore';
 import { isWidgetBridgeAvailable } from '../../modules/reset-widget-bridge';
 import type { AccentColor, WidgetSize, WidgetStyle } from '@/types';
 import AdBanner from '@/components/AdBanner';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 const STYLE_OPTIONS: { id: WidgetStyle; label: string }[] = [
   { id: 'progressRing', label: 'Progress Ring' },
@@ -147,6 +148,8 @@ export default function Widgets() {
         <View style={{ marginTop: 24 }}>
           <Button label="Save this widget" onPress={handleSave} accent={accent} fullWidth />
         </View>
+
+        <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginTop: 20 }} />
 
         {widgetConfigs.length > 0 && (
           <>
