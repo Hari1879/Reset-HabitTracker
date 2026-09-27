@@ -79,6 +79,15 @@ export default function Home() {
               <Text style={{ color: theme.textMuted, fontSize: 12, marginTop: 3 }}>See your patterns</Text>
             </Pressable>
           </View>
+          <Pressable onPress={() => router.push('/planner')} style={{ padding: 14, borderRadius: 16, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border, flexDirection: 'row', alignItems: 'center', marginBottom: 16 }} accessibilityRole="button" accessibilityLabel="Open ADHD planner">
+            <Text style={{ fontSize: 19 }}>🧠</Text>
+            <View style={{ marginLeft: 12 }}>
+              <Text style={{ color: theme.textPrimary, fontWeight: '700' }}>ADHD Planner</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12, marginTop: 2 }}>Your daily routine checklist</Text>
+            </View>
+            <View style={{ flex: 1 }} />
+            <IconGlyph name="chevronRight" size={16} color={theme.textMuted} />
+          </Pressable>
           {activeHabits.length === 0 ? (
             <EmptyState theme={theme} />
           ) : (

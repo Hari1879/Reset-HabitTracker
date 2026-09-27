@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
@@ -8,9 +8,18 @@ import { useHabitStore } from '@/store/useHabitStore';
 import { getCurrentStreakDays } from '@/lib/streaks';
 import AdBanner from '@/components/AdBanner';
 import { BannerAdSize } from 'react-native-google-mobile-ads';
+import { readHRVSamples } from '@/lib/healthKit';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const FEEDBACK_EMAIL = 'harigmindia7@gmail.com';
+
+type Period = 'week' | 'month' | 'year';
+const PERIODS: { id: Period; label: string; days: number }[] = [
+  { id: 'week',  label: 'Week',  days: 7   },
+  { id: 'month', label: 'Month', days: 30  },
+  { id: 'year',  label: 'Year',  days: 365 },
+];
 
 type FeedbackType = 'bug' | 'feature' | 'other';
 const FEEDBACK_TYPES: { id: FeedbackType; label: string; emoji: string }[] = [
@@ -21,9 +30,18 @@ const FEEDBACK_TYPES: { id: FeedbackType; label: string; emoji: string }[] = [
 
 export default function WeeklyReview() {
   const theme = useTheme();
+  const [period, setPeriod] = useState<Period>('week');
   const [feedbackType, setFeedbackType] = useState<FeedbackType>('bug');
   const [feedbackText, setFeedbackText] = useState('');
   const [sent, setSent] = useState(false);
+  const [hrvSamples, setHrvSamples] = useState<number[]>([]);
+  const healthKitEnabled = useSettingsStore((s) => s.healthKitEnabled);
+
+  useEffect(() => {
+    if (healthKitEnabled) {
+      readHRVSamples(7).then(setHrvSamples).catch(() => {});
+    }
+  }, [healthKitEnabled]);
 
   const handleSend = () => {
     if (!feedbackText.trim()) return;
@@ -40,8 +58,10 @@ export default function WeeklyReview() {
   const checkIns = useHabitStore((state) => state.checkIns);
   const slips = useHabitStore((state) => state.slips);
   const cravings = useHabitStore((state) => state.cravings);
-  const since = Date.now() - 7 * DAY_MS;
+  const since = Date.now() - PERIODS.find((p) => p.id === period)!.days * DAY_MS;
   const activeHabits = habits.filter((habit) => !habit.archived);
+  const avgHRV = hrvSamples.length > 0 ? Math.round(hrvSamples.reduce((a, b) => a + b, 0) / hrvSamples.length) : null;
+  const hrvStress = avgHRV === null ? null : avgHRV < 30 ? 'High stress' : avgHRV < 50 ? 'Moderate' : 'Well-recovered';
 
   const review = useMemo(() => {
     const recentCheckIns = checkIns.filter((item) => new Date(item.createdAt).getTime() >= since);
@@ -67,13 +87,25 @@ export default function WeeklyReview() {
       moodCounts,
       topTrigger: topTrigger?.[0]?.replace('_', ' ') ?? 'none yet',
     };
-  }, [checkIns, slips, cravings, since]);
+  }, [checkIns, slips, cravings, since, period]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.background }} edges={['top']}>
       <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 60 }} showsVerticalScrollIndicator={false}>
-        <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: '800' }} accessibilityRole="header">Weekly review</Text>
-        <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 6, lineHeight: 20 }}>A quiet look at the last seven days. Progress is information, not a verdict.</Text>
+        <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: '800' }} accessibilityRole="header">Review</Text>
+        <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 6, lineHeight: 20 }}>A quiet look at your progress. Progress is information, not a verdict.</Text>
+
+        {/* Period selector */}
+        <View style={{ flexDirection: 'row', backgroundColor: theme.cardAlt, borderRadius: 14, padding: 4, marginTop: 16 }}>
+          {PERIODS.map((p) => (
+            <Pressable key={p.id} onPress={() => setPeriod(p.id)} style={{
+              flex: 1, paddingVertical: 8, borderRadius: 11, alignItems: 'center',
+              backgroundColor: period === p.id ? theme.card : 'transparent',
+            }}>
+              <Text style={{ color: period === p.id ? theme.textPrimary : theme.textMuted, fontSize: 13, fontWeight: '700' }}>{p.label}</Text>
+            </Pressable>
+          ))}
+        </View>
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 10, marginTop: 22 }}>
           <Metric value={`${review.checkIns}`} label="check-ins" theme={theme} />
@@ -81,6 +113,27 @@ export default function WeeklyReview() {
           <Metric value={`${review.resolvedCravings}`} label="cravings passed" theme={theme} />
           <Metric value={`${review.slips}`} label="slips" theme={theme} />
         </View>
+
+        {/* HRV Stress Monitor */}
+        {healthKitEnabled && (
+          <View style={{ backgroundColor: theme.card, borderRadius: 16, padding: 16, marginTop: 16, borderWidth: 1, borderColor: theme.border }}>
+            <Text style={{ color: theme.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, marginBottom: 8 }}>HRV STRESS MONITOR</Text>
+            {avgHRV !== null ? (
+              <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                <View>
+                  <Text style={{ color: theme.textPrimary, fontSize: 32, fontWeight: '800' }}>{avgHRV} <Text style={{ fontSize: 14, fontWeight: '500', color: theme.textMuted }}>ms avg</Text></Text>
+                  <Text style={{ color: hrvStress === 'Well-recovered' ? theme.teal.base : hrvStress === 'Moderate' ? theme.gold.base : theme.coral.base, fontSize: 13, fontWeight: '700', marginTop: 4 }}>{hrvStress}</Text>
+                </View>
+                <View style={{ alignItems: 'flex-end' }}>
+                  <Text style={{ color: theme.textMuted, fontSize: 12 }}>{hrvSamples.length} readings</Text>
+                  <Text style={{ color: theme.textMuted, fontSize: 11, marginTop: 2 }}>last 7 days</Text>
+                </View>
+              </View>
+            ) : (
+              <Text style={{ color: theme.textMuted, fontSize: 13 }}>No HRV data found. Make sure your Apple Watch is recording HRV.</Text>
+            )}
+          </View>
+        )}
 
         <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginTop: 20, marginBottom: 4 }} />
 

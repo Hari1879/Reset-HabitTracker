@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, Switch, Alert, TextInput, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { useTheme } from '@/theme';
 import { Card } from '@/components/ui/Card';
 import { Chip } from '@/components/ui/Chip';
@@ -39,6 +40,8 @@ export default function Settings() {
   const setEmergencyContact = useSettingsStore((s) => s.setEmergencyContact);
   const healthKitEnabled = useSettingsStore((s) => s.healthKitEnabled);
   const enableHealthKit = useSettingsStore((s) => s.enableHealthKit);
+  const biometricLockEnabled = useSettingsStore((s) => s.biometricLockEnabled);
+  const setBiometricLock = useSettingsStore((s) => s.setBiometricLock);
 
   const habitState = useHabitStore();
   const [exporting, setExporting] = useState(false);
@@ -247,7 +250,51 @@ export default function Settings() {
           </View>
         </Card>
 
+        <SectionLabel theme={theme}>ADHD PLANNER</SectionLabel>
+        <Card>
+          <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>
+            A simple daily routine checklist to help you stay on track, one step at a time.
+          </Text>
+          <Pressable
+            onPress={() => router.push('/planner')}
+            style={({ pressed }) => ({
+              marginTop: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+              backgroundColor: theme.cardAlt, borderRadius: 14, padding: 14, opacity: pressed ? 0.7 : 1,
+            })}
+          >
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={{ fontSize: 18, marginRight: 10 }}>🧠</Text>
+              <Text style={{ color: theme.textPrimary, fontSize: 15, fontWeight: '700' }}>Open daily planner</Text>
+            </View>
+            <IconGlyph name="chevronRight" size={16} color={theme.textMuted} />
+          </Pressable>
+        </Card>
+
         <SectionLabel theme={theme}>PRIVACY</SectionLabel>
+        <Card>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View style={{ flex: 1, marginRight: 12 }}>
+              <Text style={{ color: theme.textPrimary, fontSize: 15, fontWeight: '700' }}>FaceID / TouchID lock</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12, marginTop: 2 }}>Require biometric auth to open Reset.</Text>
+            </View>
+            <Switch
+              value={biometricLockEnabled}
+              onValueChange={async (v) => {
+                if (v) {
+                  const supported = await LocalAuthentication.hasHardwareAsync();
+                  if (!supported) { Alert.alert('Not supported', 'Biometric auth is not available on this device.'); return; }
+                  const enrolled = await LocalAuthentication.isEnrolledAsync();
+                  if (!enrolled) { Alert.alert('Not set up', 'Please set up FaceID or TouchID in your device Settings first.'); return; }
+                }
+                setBiometricLock(v);
+              }}
+              trackColor={{ true: theme.teal.base, false: theme.cardAlt }}
+              accessibilityLabel="Toggle biometric lock"
+            />
+          </View>
+        </Card>
+
+        <SectionLabel theme={theme}>DATA PRIVACY</SectionLabel>
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
             <IconGlyph name="lock" size={18} color={theme.textSecondary} />

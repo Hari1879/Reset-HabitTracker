@@ -3,7 +3,10 @@ import AppleHealthKit, { HealthKitPermissions } from 'react-native-health';
 
 const PERMISSIONS: HealthKitPermissions = {
   permissions: {
-    read: [AppleHealthKit.Constants.Permissions.MindfulSession],
+    read: [
+      AppleHealthKit.Constants.Permissions.MindfulSession,
+      AppleHealthKit.Constants.Permissions.HeartRateVariability,
+    ],
     write: [AppleHealthKit.Constants.Permissions.MindfulSession],
   },
 };
@@ -16,6 +19,22 @@ export function requestHealthKitPermissions(): Promise<void> {
       if (err) reject(new Error(err));
       else resolve();
     });
+  });
+}
+
+/** Read the last 7 days of HRV (SDNN ms) samples. Returns null if unavailable or permission denied. */
+export function readHRVSamples(days = 7): Promise<number[]> {
+  return new Promise((resolve) => {
+    if (Platform.OS !== 'ios') { resolve([]); return; }
+    const start = new Date();
+    start.setDate(start.getDate() - days);
+    AppleHealthKit.getHeartRateVariabilitySamples(
+      { startDate: start.toISOString(), limit: 50 },
+      (err, results) => {
+        if (err || !results) { resolve([]); return; }
+        resolve(results.map((r) => r.value));
+      },
+    );
   });
 }
 

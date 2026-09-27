@@ -5,6 +5,7 @@ import type { AppSettings, EmergencyContact, Reminder, WidgetStyle } from '@/typ
 import { cancelReminder, scheduleReminder } from '@/lib/notifications';
 import { generateId } from '@/lib/id';
 import { requestHealthKitPermissions } from '@/lib/healthKit';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 interface SettingsState {
   settings: AppSettings;
@@ -12,6 +13,7 @@ interface SettingsState {
   preferredWidgetStyle: WidgetStyle;
   emergencyContact: EmergencyContact | null;
   healthKitEnabled: boolean;
+  biometricLockEnabled: boolean;
   hasHydrated: boolean;
   setTheme: (theme: AppSettings['theme']) => void;
   setStrictPrivacyMode: (enabled: boolean) => void;
@@ -19,6 +21,7 @@ interface SettingsState {
   completeOnboarding: () => void;
   setEmergencyContact: (contact: EmergencyContact | null) => void;
   enableHealthKit: () => Promise<void>;
+  setBiometricLock: (enabled: boolean) => void;
   addReminder: (time: string, days: number[], habitId?: string, habitTitle?: string) => Promise<void>;
   toggleReminder: (id: string, enabled: boolean, habitTitle: string) => Promise<void>;
   removeReminder: (id: string) => Promise<void>;
@@ -39,6 +42,7 @@ export const useSettingsStore = create<SettingsState>()(
       preferredWidgetStyle: 'progressRing',
       emergencyContact: null,
       healthKitEnabled: false,
+      biometricLockEnabled: false,
       hasHydrated: false,
 
       setTheme: (theme) => set((s) => ({ settings: { ...s.settings, theme } })),
@@ -46,6 +50,8 @@ export const useSettingsStore = create<SettingsState>()(
       setPreferredWidgetStyle: (style) => set({ preferredWidgetStyle: style }),
       completeOnboarding: () => set((s) => ({ settings: { ...s.settings, onboardingComplete: true } })),
       setEmergencyContact: (contact) => set({ emergencyContact: contact }),
+
+      setBiometricLock: (enabled) => set({ biometricLockEnabled: enabled }),
 
       enableHealthKit: async () => {
         try {
