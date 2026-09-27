@@ -16,6 +16,7 @@ import { File } from 'expo-file-system';
 import type { ThemePreference } from '@/types';
 import type { EmergencyContact } from '@/types';
 import AdBanner from '@/components/AdBanner';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 const THEME_OPTIONS: { id: ThemePreference; label: string }[] = [
   { id: 'system', label: 'System' },
@@ -131,6 +132,8 @@ export default function Settings() {
           </View>
         </Card>
 
+        <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginVertical: 8 }} />
+
         <SectionLabel theme={theme}>YOUR DATA</SectionLabel>
         <Card>
           <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>
@@ -188,6 +191,8 @@ export default function Settings() {
             </View>
           ) : null}
         </Card>
+
+        <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginVertical: 8 }} />
 
         <SectionLabel theme={theme}>SUPPORT THE APP</SectionLabel>
         <Card>

@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { useHabitStore } from '@/store/useHabitStore';
 import { getCurrentStreakDays } from '@/lib/streaks';
 import AdBanner from '@/components/AdBanner';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -57,7 +58,9 @@ export default function WeeklyReview() {
           <Metric value={`${review.slips}`} label="slips" theme={theme} />
         </View>
 
-        <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: '700', marginTop: 28, marginBottom: 12 }}>Your patterns</Text>
+        <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginTop: 20, marginBottom: 4 }} />
+
+        <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: '700', marginTop: 20, marginBottom: 12 }}>Your patterns</Text>
         <Card>
           <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 21 }}>Most common trigger</Text>
           <Text style={{ color: theme.textPrimary, fontSize: 20, fontWeight: '800', marginTop: 4, textTransform: 'capitalize' }}>{review.topTrigger}</Text>
@@ -65,7 +68,9 @@ export default function WeeklyReview() {
           <Text style={{ color: theme.textSecondary, fontSize: 14, marginTop: 4 }}>{formatMood(review.moodCounts)}</Text>
         </Card>
 
-        <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: '700', marginTop: 28, marginBottom: 12 }}>Keep going</Text>
+        <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginTop: 20, marginBottom: 4 }} />
+
+        <Text style={{ color: theme.textPrimary, fontSize: 18, fontWeight: '700', marginTop: 20, marginBottom: 12 }}>Keep going</Text>
         {activeHabits.map((habit) => (
           <Card key={habit.id} style={{ marginBottom: 10 }}>
             <Text style={{ color: theme.textPrimary, fontSize: 16, fontWeight: '700' }}>{habit.title}</Text>

@@ -6,6 +6,7 @@ import { AchievementCard } from '@/components/AchievementCard';
 import { IconGlyph } from '@/components/IconGlyph';
 import { useHabitStore } from '@/store/useHabitStore';
 import AdBanner from '@/components/AdBanner';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 export default function Achievements() {
   const theme = useTheme();
@@ -34,9 +35,13 @@ export default function Achievements() {
             </Text>
           </View>
         ) : (
-          sorted.map((a) => (
-            <AchievementCard key={a.id} achievement={a} habitTitle={habits.find((h) => h.id === a.habitId)?.title} />
-          ))
+          sorted.flatMap((a, idx) => {
+            const card = <AchievementCard key={a.id} achievement={a} habitTitle={habits.find((h) => h.id === a.habitId)?.title} />;
+            if ((idx + 1) % 3 === 0 && idx < sorted.length - 1) {
+              return [card, <AdBanner key={`ad-${idx}`} size={BannerAdSize.LARGE_BANNER} style={{ marginVertical: 8 }} />];
+            }
+            return [card];
+          })
         )}
       </ScrollView>
       <AdBanner />
