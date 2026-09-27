@@ -14,6 +14,7 @@ import { formatLongDate, getGreeting } from '@/lib/dates';
 import type { SlipTrigger } from '@/types';
 import AdBanner from '@/components/AdBanner';
 import { getDailyQuote } from '@/lib/quotes';
+import { BannerAdSize } from 'react-native-google-mobile-ads';
 
 export default function Home() {
   const theme = useTheme();
@@ -63,7 +64,9 @@ export default function Home() {
           </View>
         </LinearGradient>
 
-        <View style={{ marginTop: 28 }}>
+        <AdBanner size={BannerAdSize.LARGE_BANNER} style={{ marginTop: 20 }} />
+
+        <View style={{ marginTop: 20 }}>
           <View style={{ flexDirection: 'row', gap: 10, marginBottom: 16 }}>
             <Pressable onPress={() => router.push('/craving')} style={{ flex: 1, padding: 14, borderRadius: 16, backgroundColor: theme.card, borderWidth: 1, borderColor: theme.border }} accessibilityRole="button" accessibilityLabel="Open craving support">
               <IconGlyph name="flame" size={19} color={theme.coral.base} />
@@ -79,15 +82,22 @@ export default function Home() {
           {activeHabits.length === 0 ? (
             <EmptyState theme={theme} />
           ) : (
-            activeHabits.map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                checkIns={checkIns}
-                onCheckIn={() => checkInToday(habit.id)}
-                onSlip={() => setSlipHabitId(habit.id)}
-              />
-            ))
+            activeHabits.flatMap((habit, idx) => {
+              const card = (
+                <HabitCard
+                  key={habit.id}
+                  habit={habit}
+                  checkIns={checkIns}
+                  onCheckIn={() => checkInToday(habit.id)}
+                  onSlip={() => setSlipHabitId(habit.id)}
+                />
+              );
+              // Inject a banner ad after every 2nd card
+              if ((idx + 1) % 2 === 0 && idx < activeHabits.length - 1) {
+                return [card, <AdBanner key={`ad-${idx}`} size={BannerAdSize.LARGE_BANNER} style={{ marginVertical: 8 }} />];
+              }
+              return [card];
+            })
           )}
         </View>
       </ScrollView>
