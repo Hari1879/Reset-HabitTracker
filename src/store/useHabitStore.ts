@@ -26,6 +26,8 @@ import { evaluateNewAchievements } from '@/lib/achievements';
 import { scheduleMilestoneNotifications, cancelMilestoneNotifications } from '@/lib/milestoneNotifications';
 import { todayKey } from '@/lib/dates';
 import { syncAllWidgetsForHabit, clearWidgetSnapshot } from '../../modules/reset-widget-bridge';
+import { writeSobrietyCheckIn } from '@/lib/healthKit';
+import { useSettingsStore } from '@/store/useSettingsStore';
 
 interface HabitState {
   habits: Habit[];
@@ -158,6 +160,10 @@ export const useHabitStore = create<HabitState>()(
 
         const habit = get().habits.find((h) => h.id === habitId);
         if (!habit) return;
+
+        if (!already && useSettingsStore.getState().healthKitEnabled) {
+          writeSobrietyCheckIn(habit.title);
+        }
 
         const newAchievements = evaluateNewAchievements(habit, get().slips, get().achievements);
         if (newAchievements.length > 0) {

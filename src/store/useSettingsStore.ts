@@ -4,18 +4,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { AppSettings, EmergencyContact, Reminder, WidgetStyle } from '@/types';
 import { cancelReminder, scheduleReminder } from '@/lib/notifications';
 import { generateId } from '@/lib/id';
+import { requestHealthKitPermissions } from '@/lib/healthKit';
 
 interface SettingsState {
   settings: AppSettings;
   reminders: Reminder[];
   preferredWidgetStyle: WidgetStyle;
   emergencyContact: EmergencyContact | null;
+  healthKitEnabled: boolean;
   hasHydrated: boolean;
   setTheme: (theme: AppSettings['theme']) => void;
   setStrictPrivacyMode: (enabled: boolean) => void;
   setPreferredWidgetStyle: (style: WidgetStyle) => void;
   completeOnboarding: () => void;
   setEmergencyContact: (contact: EmergencyContact | null) => void;
+  enableHealthKit: () => Promise<void>;
   addReminder: (time: string, days: number[], habitId?: string, habitTitle?: string) => Promise<void>;
   toggleReminder: (id: string, enabled: boolean, habitTitle: string) => Promise<void>;
   removeReminder: (id: string) => Promise<void>;
@@ -35,6 +38,7 @@ export const useSettingsStore = create<SettingsState>()(
       reminders: [],
       preferredWidgetStyle: 'progressRing',
       emergencyContact: null,
+      healthKitEnabled: false,
       hasHydrated: false,
 
       setTheme: (theme) => set((s) => ({ settings: { ...s.settings, theme } })),
@@ -42,6 +46,15 @@ export const useSettingsStore = create<SettingsState>()(
       setPreferredWidgetStyle: (style) => set({ preferredWidgetStyle: style }),
       completeOnboarding: () => set((s) => ({ settings: { ...s.settings, onboardingComplete: true } })),
       setEmergencyContact: (contact) => set({ emergencyContact: contact }),
+
+      enableHealthKit: async () => {
+        try {
+          await requestHealthKitPermissions();
+          set({ healthKitEnabled: true });
+        } catch {
+          set({ healthKitEnabled: false });
+        }
+      },
 
       addReminder: async (time, days, habitId, habitTitle) => {
         const id = generateId('reminder');

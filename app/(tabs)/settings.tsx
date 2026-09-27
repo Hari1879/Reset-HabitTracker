@@ -35,6 +35,8 @@ export default function Settings() {
   const removeReminder = useSettingsStore((s) => s.removeReminder);
   const emergencyContact = useSettingsStore((s) => s.emergencyContact);
   const setEmergencyContact = useSettingsStore((s) => s.setEmergencyContact);
+  const healthKitEnabled = useSettingsStore((s) => s.healthKitEnabled);
+  const enableHealthKit = useSettingsStore((s) => s.enableHealthKit);
 
   const habitState = useHabitStore();
   const [exporting, setExporting] = useState(false);
@@ -184,6 +186,33 @@ export default function Settings() {
               )}
             </View>
           ) : null}
+        </Card>
+
+        <SectionLabel theme={theme}>APPLE HEALTH</SectionLabel>
+        <Card>
+          <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
+            <IconGlyph name="heart" size={18} color={theme.coral.base} />
+            <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20, marginLeft: 10, flex: 1 }}>
+              Write a mindfulness session to the Health app each time you check in on a habit. Your streak progress appears in Apple Health's Mindfulness section.
+            </Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 18 }}>
+            <View style={{ flex: 1, marginRight: 12 }}>
+              <Text style={{ color: theme.textPrimary, fontSize: 15, fontWeight: '700' }}>Sync with Apple Health</Text>
+              <Text style={{ color: theme.textMuted, fontSize: 12, marginTop: 2 }}>
+                {healthKitEnabled ? 'Writing check-ins to Health' : 'Off — tap to enable and grant access'}
+              </Text>
+            </View>
+            <Switch
+              value={healthKitEnabled}
+              onValueChange={(v) => {
+                if (v) enableHealthKit();
+                else useSettingsStore.setState({ healthKitEnabled: false });
+              }}
+              trackColor={{ true: theme.coral.base, false: theme.cardAlt }}
+              accessibilityLabel="Toggle Apple Health sync"
+            />
+          </View>
         </Card>
 
         <SectionLabel theme={theme}>PRIVACY</SectionLabel>
