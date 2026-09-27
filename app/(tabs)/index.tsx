@@ -12,6 +12,8 @@ import { useHabitStore } from '@/store/useHabitStore';
 import { getMomentumSummary } from '@/lib/streaks';
 import { formatLongDate, getGreeting } from '@/lib/dates';
 import type { SlipTrigger } from '@/types';
+import AdBanner from '@/components/AdBanner';
+import { getDailyQuote } from '@/lib/quotes';
 
 export default function Home() {
   const theme = useTheme();
@@ -41,6 +43,11 @@ export default function Home() {
         <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: '800', marginTop: 2 }} accessibilityRole="header">
           {getGreeting()}
         </Text>
+
+        <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 16, marginTop: 16, borderWidth: 1, borderColor: theme.border }}>
+          <Text style={{ color: theme.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, marginBottom: 6 }}>TODAY'S THOUGHT</Text>
+          <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 21, fontStyle: 'italic' }}>"{getDailyQuote()}"</Text>
+        </View>
 
         <LinearGradient
           colors={[theme.teal.soft, theme.lavender.soft]}
@@ -115,6 +122,7 @@ export default function Home() {
         onKeepGoing={() => setSlipHabitId(null)}
         onRecord={handleRecordSlip}
       />
+      <AdBanner />
     </SafeAreaView>
   );
 }

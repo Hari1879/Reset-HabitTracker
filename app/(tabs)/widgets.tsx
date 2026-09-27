@@ -12,6 +12,7 @@ import { IconGlyph, type IconName } from '@/components/IconGlyph';
 import { useHabitStore } from '@/store/useHabitStore';
 import { isWidgetBridgeAvailable } from '../../modules/reset-widget-bridge';
 import type { AccentColor, WidgetSize, WidgetStyle } from '@/types';
+import AdBanner from '@/components/AdBanner';
 
 const STYLE_OPTIONS: { id: WidgetStyle; label: string }[] = [
   { id: 'progressRing', label: 'Progress Ring' },
@@ -172,6 +173,7 @@ export default function Widgets() {
           </>
         )}
       </ScrollView>
+      <AdBanner />
     </SafeAreaView>
   );
 }

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Switch, Alert } from 'react-native';
+import { View, Text, ScrollView, Switch, Alert, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { Card } from '@/components/ui/Card';
@@ -13,6 +13,8 @@ import { exportDataAsJSON } from '@/lib/exportData';
 import * as DocumentPicker from 'expo-document-picker';
 import { File } from 'expo-file-system';
 import type { ThemePreference } from '@/types';
+import type { EmergencyContact } from '@/types';
+import AdBanner from '@/components/AdBanner';
 
 const THEME_OPTIONS: { id: ThemePreference; label: string }[] = [
   { id: 'system', label: 'System' },
@@ -31,10 +33,15 @@ export default function Settings() {
   const addReminder = useSettingsStore((s) => s.addReminder);
   const toggleReminder = useSettingsStore((s) => s.toggleReminder);
   const removeReminder = useSettingsStore((s) => s.removeReminder);
+  const emergencyContact = useSettingsStore((s) => s.emergencyContact);
+  const setEmergencyContact = useSettingsStore((s) => s.setEmergencyContact);
 
   const habitState = useHabitStore();
   const [exporting, setExporting] = useState(false);
   const [pickingTime, setPickingTime] = useState(false);
+  const [editingContact, setEditingContact] = useState(false);
+  const [contactName, setContactName] = useState(emergencyContact?.name ?? '');
+  const [contactPhone, setContactPhone] = useState(emergencyContact?.phone ?? '');
 
   const handleAddReminder = async (time: string) => {
     setPickingTime(false);
@@ -130,6 +137,55 @@ export default function Settings() {
           <Button label="Restore from JSON" onPress={handleImport} variant="ghost" style={{ marginTop: 8 }} />
         </Card>
 
+        <SectionLabel theme={theme}>EMERGENCY CONTACT</SectionLabel>
+        <Card>
+          <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>
+            Add a trusted person. One-tap call or text appears on the craving screen when you need support.
+          </Text>
+          {emergencyContact && !editingContact ? (
+            <View style={{ marginTop: 14 }}>
+              <Text style={{ color: theme.textPrimary, fontSize: 15, fontWeight: '700' }}>{emergencyContact.name}</Text>
+              <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 2 }}>{emergencyContact.phone}</Text>
+              <View style={{ flexDirection: 'row', gap: 10, marginTop: 12 }}>
+                <Button label="Edit" variant="secondary" onPress={() => { setContactName(emergencyContact.name); setContactPhone(emergencyContact.phone); setEditingContact(true); }} style={{ flex: 1 }} />
+                <Button label="Remove" variant="ghost" onPress={() => setEmergencyContact(null)} style={{ flex: 1 }} />
+              </View>
+            </View>
+          ) : editingContact || !emergencyContact ? (
+            <View style={{ marginTop: 14, gap: 10 }}>
+              <TextInput
+                value={contactName}
+                onChangeText={setContactName}
+                placeholder="Name"
+                placeholderTextColor={theme.textMuted}
+                style={{ backgroundColor: theme.cardAlt, borderRadius: 14, padding: 12, color: theme.textPrimary, fontSize: 15 }}
+              />
+              <TextInput
+                value={contactPhone}
+                onChangeText={setContactPhone}
+                placeholder="Phone number"
+                placeholderTextColor={theme.textMuted}
+                keyboardType="phone-pad"
+                style={{ backgroundColor: theme.cardAlt, borderRadius: 14, padding: 12, color: theme.textPrimary, fontSize: 15 }}
+              />
+              <Button
+                label="Save contact"
+                onPress={() => {
+                  if (contactName.trim() && contactPhone.trim()) {
+                    setEmergencyContact({ name: contactName.trim(), phone: contactPhone.trim() });
+                    setEditingContact(false);
+                  }
+                }}
+                disabled={!contactName.trim() || !contactPhone.trim()}
+                fullWidth
+              />
+              {editingContact && (
+                <Button label="Cancel" variant="ghost" onPress={() => setEditingContact(false)} fullWidth />
+              )}
+            </View>
+          ) : null}
+        </Card>
+
         <SectionLabel theme={theme}>PRIVACY</SectionLabel>
         <Card>
           <View style={{ flexDirection: 'row', alignItems: 'flex-start' }}>
@@ -155,6 +211,7 @@ export default function Settings() {
 
         <Text style={{ color: theme.textMuted, fontSize: 12, textAlign: 'center', marginTop: 28 }}>Reset · v1.0.0</Text>
       </ScrollView>
+      <AdBanner />
     </SafeAreaView>
   );
 }

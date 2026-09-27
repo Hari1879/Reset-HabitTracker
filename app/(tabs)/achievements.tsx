@@ -5,6 +5,7 @@ import { useTheme } from '@/theme';
 import { AchievementCard } from '@/components/AchievementCard';
 import { IconGlyph } from '@/components/IconGlyph';
 import { useHabitStore } from '@/store/useHabitStore';
+import AdBanner from '@/components/AdBanner';
 
 export default function Achievements() {
   const theme = useTheme();
@@ -38,6 +39,7 @@ export default function Achievements() {
           ))
         )}
       </ScrollView>
+      <AdBanner />
     </SafeAreaView>
   );
 }

@@ -6,7 +6,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { DotProgress } from '@/components/DotProgress';
 import { IconGlyph, type IconName } from '@/components/IconGlyph';
-import { getCurrentStreakDays } from '@/lib/streaks';
+import { getCurrentStreakDays, getMoneyTimeSaved } from '@/lib/streaks';
 import { getMilestoneProgress } from '@/lib/milestones';
 import { formatFriendlyDate, todayKey } from '@/lib/dates';
 import type { CheckIn, Habit } from '@/types';
@@ -26,6 +26,7 @@ export function HabitCard({ habit, checkIns, onCheckIn, onSlip }: Props) {
   const { next, daysRemaining, progress } = getMilestoneProgress(streakDays);
   const checkedInToday = checkIns.some((c) => c.habitId === habit.id && c.date === todayKey());
   const filledDots = Math.round(progress * 20);
+  const saved = getMoneyTimeSaved(habit, streakDays);
 
   return (
     <Pressable
@@ -59,6 +60,11 @@ export function HabitCard({ habit, checkIns, onCheckIn, onSlip }: Props) {
             <Text style={{ color: theme.textSecondary, fontSize: 13, marginTop: 2 }}>
               {streakDays} {streakDays === 1 ? 'day' : 'days'} free · since {formatFriendlyDate(habit.startDate)}
             </Text>
+            {saved.money !== undefined && (
+              <Text style={{ color: accentValue, fontSize: 12, fontWeight: '700', marginTop: 3 }}>
+                {habit.costUnit ?? '$'}{saved.money} saved
+              </Text>
+            )}
           </View>
         </View>
 

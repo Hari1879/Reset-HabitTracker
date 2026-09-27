@@ -142,6 +142,11 @@ export interface AppSettings {
   onboardingComplete: boolean;
 }
 
+export interface EmergencyContact {
+  name: string;
+  phone: string;
+}
+
 /** Snapshot handed to the native widget bridge on every data-changing action. */
 export interface WidgetSyncSnapshot {
   habitId: string;

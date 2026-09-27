@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Alert, TextInput } from 'react-native';
+import { View, Text, ScrollView, Alert, TextInput, Share } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
@@ -35,6 +35,11 @@ export default function HabitDetail() {
   const [craving, setCraving] = useState(1);
   const [journal, setJournal] = useState('');
 
+  const journalEntries = useMemo(
+    () => checkIns.filter((c) => c.habitId === id && c.journal).sort((a, b) => b.date.localeCompare(a.date)).slice(0, 5),
+    [checkIns, id],
+  );
+
   const habit = habits.find((h) => h.id === id);
 
   const streakDays = habit ? getCurrentStreakDays(habit) : 0;
@@ -45,6 +50,14 @@ export default function HabitDetail() {
   const saved = habit ? getMoneyTimeSaved(habit, streakDays) : {};
 
   const accentValue = habit ? theme[habit.accent].base : theme.teal.base;
+
+  const handleShare = () => {
+    if (!habit) return;
+    const milestoneText = next ? `${daysRemaining} days until ${next.label}` : 'Every milestone reached';
+    Share.share({
+      message: `I'm on day ${streakDays} of my "${habit.title}" journey with Reset!\n\n${milestoneText}\n\nTracking my progress one day at a time.`,
+    }).catch(() => {});
+  };
 
   const handleRecordSlip = (trigger: SlipTrigger | undefined, note: string | undefined) => {
     if (!habit) return;
@@ -82,7 +95,10 @@ export default function HabitDetail() {
       <ScreenHeader
         title={habit.title}
         right={
-          <IconButton name="edit" accessibilityLabel="Edit habit" onPress={() => router.push(`/habit/${habit.id}/edit`)} />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <IconButton name="share" accessibilityLabel="Share streak" onPress={handleShare} />
+            <IconButton name="edit" accessibilityLabel="Edit habit" onPress={() => router.push(`/habit/${habit.id}/edit`)} />
+          </View>
         }
       />
 
@@ -123,6 +139,20 @@ export default function HabitDetail() {
 
         <SectionTitle theme={theme}>History</SectionTitle>
         <HeatmapCalendar habitId={habit.id} checkIns={checkIns} slips={slips} accent={habit.accent} />
+
+        {journalEntries.length > 0 && (
+          <>
+            <SectionTitle theme={theme}>Journal</SectionTitle>
+            <View style={{ paddingHorizontal: 20, gap: 10 }}>
+              {journalEntries.map((entry) => (
+                <Card key={entry.id}>
+                  <Text style={{ color: theme.textMuted, fontSize: 12, fontWeight: '600', marginBottom: 4 }}>{entry.date}</Text>
+                  <Text style={{ color: theme.textSecondary, fontSize: 14, lineHeight: 20 }}>{entry.journal}</Text>
+                </Card>
+              ))}
+            </View>
+          </>
+        )}
 
         <SectionTitle theme={theme}>Insights</SectionTitle>
         <View style={{ paddingHorizontal: 20, flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>

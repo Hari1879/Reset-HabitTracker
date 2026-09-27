@@ -29,7 +29,8 @@ export type IconName =
   | 'info'
   | 'sun'
   | 'moon'
-  | 'phone';
+  | 'phone'
+  | 'share';
 
 interface Props {
   name: IconName;
@@ -227,6 +228,14 @@ function renderIcon(name: IconName, common: any, color: string) {
       );
     case 'phone':
       return <Rect x="7" y="2.5" width="10" height="19" rx="2.3" {...common} />;
+    case 'share':
+      return (
+        <>
+          <Line x1="12" y1="3" x2="12" y2="15" {...common} />
+          <Path d="M8 7l4-4 4 4" {...common} />
+          <Path d="M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" {...common} />
+        </>
+      );
     default:
       return <Circle cx="12" cy="12" r="8" {...common} />;
   }

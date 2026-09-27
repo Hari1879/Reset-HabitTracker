@@ -23,6 +23,7 @@ import { getPresetForCategory } from '@/lib/habitPresets';
 import { getCurrentStreakDays, applySlipToHabit } from '@/lib/streaks';
 import { getMilestoneProgress } from '@/lib/milestones';
 import { evaluateNewAchievements } from '@/lib/achievements';
+import { scheduleMilestoneNotifications, cancelMilestoneNotifications } from '@/lib/milestoneNotifications';
 import { todayKey } from '@/lib/dates';
 import { syncAllWidgetsForHabit, clearWidgetSnapshot } from '../../modules/reset-widget-bridge';
 
@@ -33,6 +34,7 @@ interface HabitState {
   cravings: CravingLog[];
   achievements: Achievement[];
   widgetConfigs: WidgetConfig[];
+  milestoneNotifIds: Record<string, string[]>;
   hasHydrated: boolean;
   lastUnlockedAchievement: Achievement | null;
 
@@ -82,6 +84,7 @@ export const useHabitStore = create<HabitState>()(
       cravings: [],
       achievements: [],
       widgetConfigs: [],
+      milestoneNotifIds: {},
       hasHydrated: false,
       lastUnlockedAchievement: null,
 
@@ -109,6 +112,9 @@ export const useHabitStore = create<HabitState>()(
           motivationNote: preset.motivationNote,
         };
         set((s) => ({ habits: [...s.habits, habit] }));
+        scheduleMilestoneNotifications(habit).then((ids) => {
+          if (ids.length > 0) set((s) => ({ milestoneNotifIds: { ...s.milestoneNotifIds, [habit.id]: ids } }));
+        });
         return habit;
       },
 
@@ -125,13 +131,19 @@ export const useHabitStore = create<HabitState>()(
       deleteHabit: (id) => {
         const configsToRemove = get().widgetConfigs.filter((c) => c.habitId === id);
         configsToRemove.forEach((c) => void clearWidgetSnapshot(c.id));
-        set((s) => ({
-          habits: s.habits.filter((h) => h.id !== id),
-          checkIns: s.checkIns.filter((c) => c.habitId !== id),
-          slips: s.slips.filter((sl) => sl.habitId !== id),
-          achievements: s.achievements.filter((a) => a.habitId !== id),
-          widgetConfigs: s.widgetConfigs.filter((c) => c.habitId !== id),
-        }));
+        const oldNotifIds = get().milestoneNotifIds[id] ?? [];
+        void cancelMilestoneNotifications(oldNotifIds);
+        set((s) => {
+          const { [id]: _removed, ...restNotifIds } = s.milestoneNotifIds;
+          return {
+            habits: s.habits.filter((h) => h.id !== id),
+            checkIns: s.checkIns.filter((c) => c.habitId !== id),
+            slips: s.slips.filter((sl) => sl.habitId !== id),
+            achievements: s.achievements.filter((a) => a.habitId !== id),
+            widgetConfigs: s.widgetConfigs.filter((c) => c.habitId !== id),
+            milestoneNotifIds: restNotifIds,
+          };
+        });
       },
 
       checkInToday: (habitId, note, reflection) => {
@@ -178,6 +190,14 @@ export const useHabitStore = create<HabitState>()(
           habits: s.habits.map((h) => (h.id === habitId ? updatedHabit : h)),
           slips: [...s.slips, fullSlip],
         }));
+
+        // Cancel old milestone notifications and reschedule from new startDate
+        const oldIds = get().milestoneNotifIds[habitId] ?? [];
+        void cancelMilestoneNotifications(oldIds).then(() =>
+          scheduleMilestoneNotifications(updatedHabit).then((ids) => {
+            set((s) => ({ milestoneNotifIds: { ...s.milestoneNotifIds, [habitId]: ids } }));
+          }),
+        );
 
         void syncAllWidgetsForHabit(get().widgetConfigs, habitId, buildSnapshot(updatedHabit));
       },

@@ -5,6 +5,7 @@ import { useTheme } from '@/theme';
 import { Card } from '@/components/ui/Card';
 import { useHabitStore } from '@/store/useHabitStore';
 import { getCurrentStreakDays } from '@/lib/streaks';
+import AdBanner from '@/components/AdBanner';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 
@@ -75,6 +76,7 @@ export default function WeeklyReview() {
           </Card>
         ))}
       </ScrollView>
+      <AdBanner />
     </SafeAreaView>
   );
 }
