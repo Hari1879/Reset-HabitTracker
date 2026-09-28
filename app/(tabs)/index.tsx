@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ScrollView, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +16,13 @@ import AdBanner from '@/components/AdBanner';
 import { getDailyQuote } from '@/lib/quotes';
 import { BannerAdSize } from 'react-native-google-mobile-ads';
 
+const ANNOUNCEMENTS = [
+  { emoji: '✨', text: 'Every feature is free. No premium needed.' },
+  { emoji: '📋', text: 'New: Tasks tab with My Day planning is live!' },
+  { emoji: '🏠', text: 'Widgets sync automatically with your check-ins.' },
+  { emoji: '💜', text: 'Your progress matters. Keep showing up.' },
+];
+
 export default function Home() {
   const theme = useTheme();
   const habits = useHabitStore((s) => s.habits);
@@ -25,6 +32,14 @@ export default function Home() {
   const recordSlip = useHabitStore((s) => s.recordSlip);
 
   const [slipHabitId, setSlipHabitId] = useState<string | null>(null);
+  const [annIdx, setAnnIdx] = useState(0);
+  const [annVisible, setAnnVisible] = useState(true);
+
+  useEffect(() => {
+    if (!annVisible) return;
+    const t = setInterval(() => setAnnIdx((i) => (i + 1) % ANNOUNCEMENTS.length), 4000);
+    return () => clearInterval(t);
+  }, [annVisible]);
 
   const activeHabits = useMemo(() => habits.filter((h) => !h.archived), [habits]);
   const momentum = useMemo(() => getMomentumSummary(habits, slips), [habits, slips]);
@@ -44,6 +59,30 @@ export default function Home() {
         <Text style={{ color: theme.textPrimary, fontSize: 28, fontWeight: '800', marginTop: 2 }} accessibilityRole="header">
           {getGreeting()}
         </Text>
+
+        {/* Announcements banner */}
+        {annVisible && (
+          <View style={{
+            flexDirection: 'row', alignItems: 'center',
+            backgroundColor: theme.teal.soft,
+            borderRadius: 16, paddingHorizontal: 14, paddingVertical: 11,
+            marginTop: 16, borderWidth: 1, borderColor: theme.teal.base + '50',
+            gap: 10,
+          }}>
+            <Text style={{ fontSize: 16 }}>{ANNOUNCEMENTS[annIdx].emoji}</Text>
+            <Text style={{ flex: 1, color: theme.textPrimary, fontSize: 13, fontWeight: '600', lineHeight: 18 }}>
+              {ANNOUNCEMENTS[annIdx].text}
+            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+              <Text style={{ color: theme.teal.base, fontSize: 11, fontWeight: '600' }}>
+                {annIdx + 1}/{ANNOUNCEMENTS.length}
+              </Text>
+              <Pressable onPress={() => setAnnVisible(false)} hitSlop={10} style={{ padding: 2 }}>
+                <IconGlyph name="close" size={14} color={theme.teal.base} />
+              </Pressable>
+            </View>
+          </View>
+        )}
 
         <View style={{ backgroundColor: theme.card, borderRadius: 20, padding: 16, marginTop: 16, borderWidth: 1, borderColor: theme.border }}>
           <Text style={{ color: theme.textMuted, fontSize: 11, fontWeight: '700', letterSpacing: 0.8, marginBottom: 6 }}>TODAY'S THOUGHT</Text>

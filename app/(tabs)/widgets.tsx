@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/theme';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
-import { Chip } from '@/components/ui/Chip';
 import { IconButton } from '@/components/ui/IconButton';
 import { WidgetPreview } from '@/components/WidgetPreview';
 import { IconGlyph, type IconName } from '@/components/IconGlyph';
@@ -14,6 +13,18 @@ import { isWidgetBridgeAvailable } from '../../modules/reset-widget-bridge';
 import type { AccentColor, WidgetSize, WidgetStyle } from '@/types';
 import AdBanner from '@/components/AdBanner';
 import { BannerAdSize } from 'react-native-google-mobile-ads';
+
+const STYLE_ICONS: Record<string, string> = {
+  progressRing: '⭕',
+  dotGrid: '🟣',
+  minimalCountdown: '⏳',
+  gridBlocks: '🔲',
+  terminal: '💻',
+  boldBlock: '⬛',
+  pulseBars: '📊',
+  weekGrid: '📅',
+  stickyNote: '📝',
+};
 
 const STYLE_OPTIONS: { id: WidgetStyle; label: string }[] = [
   { id: 'progressRing', label: 'Progress Ring' },
@@ -31,6 +42,11 @@ const SIZE_OPTIONS: { id: WidgetSize; label: string }[] = [
   { id: 'medium', label: 'Medium' },
   { id: 'large', label: 'Large' },
 ];
+const SIZE_VISUALS: Record<WidgetSize, { w: number; h: number }> = {
+  small:  { w: 28, h: 28 },
+  medium: { w: 46, h: 24 },
+  large:  { w: 40, h: 40 },
+};
 const ACCENT_OPTIONS: AccentColor[] = ['teal', 'aqua', 'lavender', 'coral', 'gold'];
 
 export default function Widgets() {
@@ -98,26 +114,108 @@ export default function Widgets() {
         </View>
 
         <SectionLabel theme={theme}>HABIT</SectionLabel>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-          <View style={{ flexDirection: 'row' }}>
-            {habits.map((h) => (
-              <Chip key={h.id} label={h.title} selected={habitId === h.id || (!habitId && h.id === habits[0].id)} onPress={() => setHabitId(h.id)} accent={h.accent} />
-            ))}
-          </View>
-        </ScrollView>
-
-        <SectionLabel theme={theme}>STYLE</SectionLabel>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {STYLE_OPTIONS.map((opt) => (
-            <Chip key={opt.id} label={opt.label} selected={style === opt.id} onPress={() => setStyle(opt.id)} accent={accent} />
-          ))}
+        <View style={{ gap: 8 }}>
+          {habits.map((h) => {
+            const active = habitId === h.id || (!habitId && h.id === habits[0].id);
+            const accentColor = theme[h.accent as AccentColor].base;
+            return (
+              <Pressable
+                key={h.id}
+                onPress={() => setHabitId(h.id)}
+                style={({ pressed }) => ({
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  backgroundColor: active ? accentColor + '18' : theme.card,
+                  borderRadius: 14,
+                  paddingHorizontal: 16,
+                  paddingVertical: 14,
+                  borderWidth: 1.5,
+                  borderColor: active ? accentColor + '70' : 'rgba(255,255,255,0.10)',
+                  opacity: pressed ? 0.85 : 1,
+                  gap: 12,
+                })}
+              >
+                <View style={{ width: 10, height: 10, borderRadius: 5, backgroundColor: accentColor }} />
+                <Text style={{ flex: 1, color: active ? theme.textPrimary : theme.textSecondary, fontSize: 14, fontWeight: active ? '700' : '500' }} numberOfLines={1}>
+                  {h.title}
+                </Text>
+                {active && (
+                  <View style={{ width: 22, height: 22, borderRadius: 11, backgroundColor: accentColor, alignItems: 'center', justifyContent: 'center' }}>
+                    <IconGlyph name="check" size={11} color="#fff" strokeWidth={2.5} />
+                  </View>
+                )}
+              </Pressable>
+            );
+          })}
         </View>
 
+        <SectionLabel theme={theme}>STYLE</SectionLabel>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginHorizontal: -20 }} contentContainerStyle={{ paddingHorizontal: 20, gap: 10 }}>
+          {STYLE_OPTIONS.map((opt) => {
+            const active = style === opt.id;
+            return (
+              <Pressable
+                key={opt.id}
+                onPress={() => setStyle(opt.id)}
+                style={({ pressed }) => ({
+                  width: 80,
+                  backgroundColor: active ? theme[accent].soft : theme.card,
+                  borderRadius: 16,
+                  paddingVertical: 14,
+                  paddingHorizontal: 8,
+                  alignItems: 'center',
+                  borderWidth: 1.5,
+                  borderColor: active ? theme[accent].base : 'rgba(255,255,255,0.10)',
+                  opacity: pressed ? 0.8 : 1,
+                })}
+              >
+                <Text style={{ fontSize: 22, marginBottom: 8 }}>
+                  {STYLE_ICONS[opt.id]}
+                </Text>
+                <Text style={{
+                  color: active ? theme[accent].base : theme.textSecondary,
+                  fontSize: 11, fontWeight: '700', textAlign: 'center', lineHeight: 14,
+                }}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </ScrollView>
+
         <SectionLabel theme={theme}>SIZE</SectionLabel>
-        <View style={{ flexDirection: 'row', flexWrap: 'wrap' }}>
-          {SIZE_OPTIONS.map((opt) => (
-            <Chip key={opt.id} label={opt.label} selected={size === opt.id} onPress={() => setSize(opt.id)} accent={accent} />
-          ))}
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          {SIZE_OPTIONS.map((opt) => {
+            const active = size === opt.id;
+            const accentColor = theme[accent].base;
+            const visual = SIZE_VISUALS[opt.id];
+            return (
+              <Pressable
+                key={opt.id}
+                onPress={() => setSize(opt.id)}
+                style={({ pressed }) => ({
+                  flex: 1,
+                  backgroundColor: active ? accentColor + '18' : theme.card,
+                  borderRadius: 16,
+                  paddingVertical: 18,
+                  alignItems: 'center',
+                  gap: 12,
+                  borderWidth: 1.5,
+                  borderColor: active ? accentColor + '70' : 'rgba(255,255,255,0.10)',
+                  opacity: pressed ? 0.85 : 1,
+                })}
+              >
+                <View style={{
+                  width: visual.w, height: visual.h,
+                  borderRadius: 6,
+                  backgroundColor: active ? accentColor : 'rgba(255,255,255,0.18)',
+                }} />
+                <Text style={{ color: active ? accentColor : theme.textSecondary, fontSize: 13, fontWeight: '700' }}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            );
+          })}
         </View>
 
         <SectionLabel theme={theme}>COLOR THEME</SectionLabel>

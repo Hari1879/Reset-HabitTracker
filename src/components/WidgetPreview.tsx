@@ -71,7 +71,7 @@ export function WidgetPreview({ widgetStyle, size, accent, icon, habitTitle, str
         overflow: 'hidden',
         borderWidth: isStickyNote ? 0 : 1,
         borderColor: isTerminal ? 'rgba(90,255,140,0.25)' : 'rgba(255,255,255,0.08)',
-        transform: isStickyNote ? [{ rotate: '-2.5deg' }] : undefined,
+        transform: isStickyNote ? [{ rotate: '-2.5deg' }] : [],
         ...(isStickyNote
           ? { shadowColor: '#000', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 5 }, elevation: 5 }
           : {}),

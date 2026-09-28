@@ -195,7 +195,7 @@ export default function WeeklyReview() {
           <TextInput
             value={feedbackText}
             onChangeText={(v) => { setFeedbackText(v); setSent(false); }}
-            placeholder={feedbackType === 'bug' ? 'Describe what happened…' : feedbackType === 'feature' ? 'Describe the feature you'd love…' : 'What's on your mind?'}
+            placeholder={feedbackType === 'bug' ? 'Describe what happened…' : feedbackType === 'feature' ? "Describe the feature you'd love…" : "What's on your mind?"}
             placeholderTextColor={theme.textMuted}
             multiline
             numberOfLines={4}

@@ -20,18 +20,18 @@ export function Chip({ label, selected, onPress, accent = 'teal' }: Props) {
       accessibilityState={{ selected: !!selected }}
       accessibilityLabel={label}
       style={({ pressed }) => ({
-        paddingVertical: 10,
+        paddingVertical: 9,
         paddingHorizontal: 16,
         borderRadius: 999,
-        backgroundColor: selected ? accentValue : theme.cardAlt,
-        borderWidth: 1,
-        borderColor: selected ? accentValue : theme.border,
+        backgroundColor: selected ? accentValue : theme.card,
+        borderWidth: 1.5,
+        borderColor: selected ? accentValue : 'rgba(255,255,255,0.14)',
         opacity: pressed ? 0.8 : 1,
         marginRight: 8,
         marginBottom: 8,
       })}
     >
-      <Text style={{ color: selected ? '#0A0E17' : theme.textPrimary, fontWeight: '600', fontSize: 14 }}>{label}</Text>
+      <Text style={{ color: selected ? '#fff' : theme.textSecondary, fontWeight: '600', fontSize: 14 }}>{label}</Text>
     </Pressable>
   );
 }

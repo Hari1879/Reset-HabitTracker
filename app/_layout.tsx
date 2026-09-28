@@ -8,6 +8,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ThemeProvider, useTheme } from '@/theme';
 import { useSettingsStore } from '@/store/useSettingsStore';
 import { useHabitStore } from '@/store/useHabitStore';
+import { useTodoStore } from '@/store/useTodoStore';
+import { syncTaskWidget } from '@/lib/taskWidgetSync';
 import { requestNotificationPermission } from '@/lib/notifications';
 import mobileAds from 'react-native-google-mobile-ads';
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -50,6 +52,12 @@ function RootNavigator() {
     }
   }, []);
 
+  // Keep task widgets in sync whenever todo items change
+  useEffect(() => {
+    syncTaskWidget(useTodoStore.getState().items);
+    return useTodoStore.subscribe((state) => syncTaskWidget(state.items));
+  }, []);
+
   useEffect(() => {
     if (settingsHydrated && biometricLockEnabled) {
       setLocked(true);
@@ -82,6 +90,7 @@ function RootNavigator() {
         <Stack.Screen name="habit/add" options={{ presentation: 'modal' }} />
         <Stack.Screen name="planner" options={{ presentation: 'modal' }} />
         <Stack.Screen name="support" options={{ presentation: 'modal' }} />
+        <Stack.Screen name="todo/[listId]" options={{ presentation: 'card' }} />
       </Stack>
     </View>
   );

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal } from 'react-native';
+import { View, Text, ScrollView, Pressable, TextInput, Alert, Modal, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTheme } from '@/theme';
@@ -17,8 +17,7 @@ export default function TodoTab() {
   const addList = useTodoStore((s) => s.addList);
   const removeList = useTodoStore((s) => s.removeList);
 
-  const myDay = useTodoStore((s) => s.items.filter((i) => i.isMyDay && !i.completed));
-  const totalToday = myDay.length;
+  const totalToday = items.filter((i) => i.isMyDay && !i.completed).length;
   const totalOpen = items.filter((i) => !i.completed).length;
 
   const [showCreate, setShowCreate] = useState(false);
@@ -165,6 +164,7 @@ export default function TodoTab() {
 
       {/* Create list bottom sheet */}
       <Modal visible={showCreate} transparent animationType="slide" onRequestClose={() => setShowCreate(false)}>
+        <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
         <Pressable style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.55)' }} onPress={() => setShowCreate(false)} />
         <View style={{
           backgroundColor: theme.card,
@@ -238,6 +238,7 @@ export default function TodoTab() {
             <Text style={{ color: newTitle.trim() ? '#fff' : theme.textMuted, fontSize: 16, fontWeight: '800' }}>Create List</Text>
           </Pressable>
         </View>
+        </KeyboardAvoidingView>
       </Modal>
     </SafeAreaView>
   );

@@ -44,6 +44,10 @@ export default function TabsLayout() {
         options={{ title: 'Review', tabBarIcon: ({ color }) => <TabIcon name="spark" color={color as string} />, tabBarAccessibilityLabel: 'Weekly review' }}
       />
       <Tabs.Screen
+        name="todo"
+        options={{ title: 'Tasks', tabBarIcon: ({ color }) => <TabIcon name="list" color={color as string} />, tabBarAccessibilityLabel: 'Tasks' }}
+      />
+      <Tabs.Screen
         name="settings"
         options={{ title: 'Settings', tabBarIcon: ({ color }) => <TabIcon name="lock" color={color as string} />, tabBarAccessibilityLabel: 'Settings' }}
       />
